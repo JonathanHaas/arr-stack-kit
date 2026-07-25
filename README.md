@@ -64,6 +64,8 @@ If the panel's key-detection table shows "missing" for any of these, open that a
 
 Settings you enter directly in the panel's forms (Usenet provider login, indexer list) are stored in `data/admin-panel/settings.json` — not in `.env` — so they persist across container restarts/rebuilds without needing to re-enter them.
 
+**Changing the password**: there's a "Change password" form directly in the admin panel — no need to edit `.env` or rebuild. It's stored hashed in `settings.json` and takes effect immediately. This is what lets a non-technical friend set their own password after first getting in via `DISABLE_AUTH=true` or the original `ADMIN_PASSWORD`, without ever touching a config file.
+
 ## What the admin panel does NOT do (yet)
 
 - **Overseerr setup** — needs a real Plex account login, so it's a manual one-time step (linked from the panel).

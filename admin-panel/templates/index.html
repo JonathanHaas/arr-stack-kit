@@ -19,10 +19,19 @@
     .indexer-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #2a2d34; }
     form.inline { display: inline; }
     .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+    .flash { padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 1rem; }
+    .flash.success { background: #1b3a24; color: #6dd47e; }
+    .flash.error { background: #3a1b1b; color: #ff6b6b; }
   </style>
 </head>
 <body>
   <h1>Arr Stack Setup <a href="/logout" style="font-size:0.8rem;">Log out</a></h1>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
 
   <div class="card">
     <h2>1. Detected API keys</h2>
@@ -84,7 +93,23 @@
   </div>
 
   <div class="card">
-    <h2>5. Apply everything</h2>
+    <h2>5. Change admin panel password</h2>
+    <p style="color:#999; font-size:0.9rem;">Changes take effect immediately, no restart needed.</p>
+    <form method="post" action="/change-password">
+      <div class="field-grid">
+        {% if has_password %}
+        <div><label>Current password</label><input type="password" name="current_password" required></div>
+        <div></div>
+        {% endif %}
+        <div><label>New password</label><input type="password" name="new_password" required></div>
+        <div><label>Confirm new password</label><input type="password" name="confirm_password" required></div>
+      </div>
+      <button type="submit">Change password</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>6. Apply everything</h2>
     <p style="color:#999; font-size:0.9rem;">Wires Prowlarr into Sonarr/Radarr, adds your indexers, and configures SABnzbd's Usenet server. Safe to run repeatedly.</p>
     <form method="post" action="/sync">
       <button type="submit">Sync now</button>

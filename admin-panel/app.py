@@ -2,7 +2,8 @@ import json
 import os
 from functools import wraps
 
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from arr_clients import (
     ArrClient,
@@ -14,7 +15,7 @@ from arr_clients import (
 )
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("ADMIN_PASSWORD", "dev-only-change-me")
+app.secret_key = os.environ.get("ADMIN_PASSWORD") or "dev-only-change-me"
 
 DISABLE_AUTH = os.environ.get("DISABLE_AUTH", "false").lower() == "true"
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "") if DISABLE_AUTH else os.environ["ADMIN_PASSWORD"]
@@ -40,6 +41,16 @@ def save_settings(settings):
         json.dump(settings, f, indent=2)
 
 
+def check_password(candidate):
+    """Prefer a password changed via the UI (hashed, stored in settings.json)
+    over the original ADMIN_PASSWORD env var, which stays as the fallback/reset value."""
+    settings = load_settings()
+    stored_hash = settings.get("admin_password_hash")
+    if stored_hash:
+        return check_password_hash(stored_hash, candidate)
+    return candidate == ADMIN_PASSWORD
+
+
 def login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
@@ -55,7 +66,7 @@ def login_required(view):
 def login():
     error = None
     if request.method == "POST":
-        if request.form.get("password") == ADMIN_PASSWORD:
+        if check_password(request.form.get("password", "")):
             session["authed"] = True
             return redirect(url_for("index"))
         error = "Wrong password"
@@ -82,10 +93,12 @@ def detect_keys():
 def index():
     keys = detect_keys()
     settings = load_settings()
+    has_password = bool(settings.get("admin_password_hash") or ADMIN_PASSWORD)
     return render_template(
         "index.html",
         keys=keys,
         settings=settings,
+        has_password=has_password,
         overseerr_url=OVERSEERR_URL.replace("overseerr", request.host.split(":")[0]),
     )
 
@@ -127,6 +140,29 @@ def remove_indexer(idx):
     if 0 <= idx < len(settings["indexers"]):
         settings["indexers"].pop(idx)
     save_settings(settings)
+    return redirect(url_for("index"))
+
+
+@app.route("/change-password", methods=["POST"])
+@login_required
+def change_password():
+    settings = load_settings()
+    has_password = bool(settings.get("admin_password_hash") or ADMIN_PASSWORD)
+    current = request.form.get("current_password", "")
+    new = request.form.get("new_password", "")
+    confirm = request.form.get("confirm_password", "")
+
+    if has_password and not check_password(current):
+        flash("Current password is incorrect.", "error")
+    elif not new:
+        flash("New password can't be empty.", "error")
+    elif new != confirm:
+        flash("New password and confirmation don't match.", "error")
+    else:
+        settings["admin_password_hash"] = generate_password_hash(new)
+        save_settings(settings)
+        flash("Password changed. Use it next time you log in.", "success")
+
     return redirect(url_for("index"))
 
 
