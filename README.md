@@ -7,6 +7,16 @@ A self-hosted media automation stack (Sonarr, Radarr, Prowlarr, Transmission, SA
 - **docker-compose.yml** — brings up the whole stack, plus [gluetun](https://github.com/qdm12/gluetun) to route Transmission's traffic through a Mullvad VPN tunnel.
 - **admin-panel/** — a small password-protected web app (port 5500) where you paste in your *external* credentials (indexer API keys, Usenet provider login, etc.) and it configures everything else automatically via each app's REST API.
 
+## System requirements
+
+- **Docker Desktop** (Mac/Windows) or **Docker Engine + Compose plugin** (Linux)
+- **CPU architecture**: amd64 (Intel/AMD) or arm64 (Apple Silicon, Raspberry Pi 4/5 on 64-bit OS) — all images used are multi-arch. 32-bit ARM (`armhf`) is **not** supported.
+- **RAM**: 4GB minimum, 8GB+ recommended if you'll actually be downloading/transcoding, not just testing the setup
+- **Disk space**: negligible for the apps themselves (a few hundred MB of config); your actual media library size is on you
+- **Ports used on the host**: 8989 (Sonarr), 7878 (Radarr), 9696 (Prowlarr), 9091 (Transmission), 8090 (SABnzbd), 5055 (Overseerr), 8080 (Homer), 5500 (admin panel) — make sure nothing else on your machine is already using these
+- **A Mullvad account** (or skip VPN entirely by removing the `gluetun`/`transmission` network dependency, if you don't need it)
+- **A Usenet provider and/or torrent indexer account(s)** — this stack doesn't include or recommend any; bring your own
+
 ## Quick start (no terminal needed)
 
 For friends who don't use the command line: install [Docker Desktop](https://www.docker.com/products/docker-desktop/), open it once and leave it running, then double-click:
