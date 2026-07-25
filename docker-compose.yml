@@ -133,3 +133,12 @@ services:
       - overseerr
       - sabnzbd
     restart: unless-stopped
+
+  cloudflared:
+    image: cloudflare/cloudflared
+    container_name: cloudflared
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN in .env}
+    profiles: ["cloudflare"]
+    depends_on:
+      - admin-panel
+    restart: unless-stopped

@@ -32,6 +32,21 @@ A self-hosted media automation stack (Sonarr, Radarr, Prowlarr, Transmission, SA
 
 The original bare-metal version of this stack (running natively on a Raspberry Pi) configured WireGuard directly via `wg-quick`. For a Docker-based distribution, [gluetun](https://github.com/qdm12/gluetun) is the standard approach — it's a purpose-built container that handles the VPN tunnel and lets you route just one other container's (Transmission's) network traffic through it, without needing host-level WireGuard setup on whatever machine this gets deployed to.
 
+## Remote access via Cloudflare Tunnel (optional)
+
+To reach the admin panel remotely without opening any ports on your router, this stack includes an opt-in Cloudflare Tunnel service.
+
+1. In the [Cloudflare Zero Trust dashboard](https://one.dash.cloudflare.com/) -> Networks -> Tunnels, create a tunnel.
+2. Add a Published Application Route for your chosen hostname (e.g. `admin.yourdomain.com`) pointing at `http://admin-panel:5500` — use the Docker service name, not `localhost`, since the tunnel container talks to `admin-panel` over the internal Docker network.
+3. Copy the tunnel's token into `.env` as `CLOUDFLARE_TUNNEL_TOKEN`.
+4. Start the stack including the tunnel:
+   ```bash
+   docker compose --profile cloudflare up -d
+   ```
+   (the plain `docker compose up -d` from Quick Start intentionally skips the tunnel, so nothing breaks if you haven't set a token)
+
+Media files themselves never touch Cloudflare — the tunnel only proxies the admin panel's web UI; all downloads/library files stay on local disk via the bind mounts in `docker-compose.yml`.
+
 ## Security notes
 
 - The admin panel is guarded by a single shared password (`ADMIN_PASSWORD`) — fine for a home network, but don't expose port 5500 directly to the internet. Put it behind a VPN or a reverse-proxy with proper auth (e.g. Cloudflare Zero Trust) if you need remote access.
