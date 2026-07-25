@@ -111,7 +111,8 @@ services:
     build: ./admin-panel
     container_name: admin-panel
     environment:
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      DISABLE_AUTH: ${DISABLE_AUTH:-false}
       SONARR_URL: http://sonarr:8989
       RADARR_URL: http://radarr:7878
       PROWLARR_URL: http://prowlarr:9696

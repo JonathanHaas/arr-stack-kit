@@ -16,7 +16,8 @@ from arr_clients import (
 app = Flask(__name__)
 app.secret_key = os.environ.get("ADMIN_PASSWORD", "dev-only-change-me")
 
-ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]
+DISABLE_AUTH = os.environ.get("DISABLE_AUTH", "false").lower() == "true"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "") if DISABLE_AUTH else os.environ["ADMIN_PASSWORD"]
 SONARR_URL = os.environ.get("SONARR_URL", "http://sonarr:8989")
 RADARR_URL = os.environ.get("RADARR_URL", "http://radarr:7878")
 PROWLARR_URL = os.environ.get("PROWLARR_URL", "http://prowlarr:9696")
@@ -42,6 +43,8 @@ def save_settings(settings):
 def login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
+        if DISABLE_AUTH:
+            return view(*args, **kwargs)
         if not session.get("authed"):
             return redirect(url_for("login"))
         return view(*args, **kwargs)
