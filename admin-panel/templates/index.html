@@ -85,7 +85,18 @@
   </div>
 
   <div class="card">
-    <h2>4. Overseerr</h2>
+    <h2>4. Recyclarr (quality profiles)</h2>
+    <p style="color:#999; font-size:0.9rem;">
+      Recyclarr syncs TRaSH Guides quality profiles/custom formats into Sonarr &amp; Radarr on a weekly schedule.
+      A starter config is auto-generated at <code>data/recyclarr/recyclarr.yml</code> the first time its container starts —
+      edit that file to choose your quality profiles and custom formats (see the
+      <a href="https://recyclarr.dev/wiki/" target="_blank">Recyclarr docs</a> for examples).
+      Clicking <strong>Sync now</strong> below fills in Sonarr/Radarr's API keys automatically; it won't touch your quality/profile choices.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>5. Overseerr</h2>
     <p style="color:#999; font-size:0.9rem;">
       Overseerr's setup wizard requires an interactive Plex login and can't be safely scripted here.
       Open it directly and complete the one-time setup: <a href="{{ overseerr_url }}" target="_blank">{{ overseerr_url }}</a>
@@ -93,7 +104,7 @@
   </div>
 
   <div class="card">
-    <h2>5. Change admin panel password</h2>
+    <h2>6. Change admin panel password</h2>
     <p style="color:#999; font-size:0.9rem;">Changes take effect immediately, no restart needed.</p>
     <form method="post" action="/change-password">
       <div class="field-grid">
@@ -109,8 +120,8 @@
   </div>
 
   <div class="card">
-    <h2>6. Apply everything</h2>
-    <p style="color:#999; font-size:0.9rem;">Wires Prowlarr into Sonarr/Radarr, adds your indexers, and configures SABnzbd's Usenet server. Safe to run repeatedly.</p>
+    <h2>7. Apply everything</h2>
+    <p style="color:#999; font-size:0.9rem;">Wires Prowlarr into Sonarr/Radarr, adds your indexers, configures SABnzbd's Usenet server, and fills in Recyclarr's Sonarr/Radarr API keys. Safe to run repeatedly.</p>
     <form method="post" action="/sync">
       <button type="submit">Sync now</button>
     </form>

@@ -7,6 +7,7 @@
     .card { background: #1f2229; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 0.8rem; }
     .ok { color: #6dd47e; }
     .error { color: #ff6b6b; }
+    .skipped { color: #ff9f43; }
     a { color: #7ba7ff; }
   </style>
 </head>
@@ -15,7 +16,7 @@
   {% for r in results %}
   <div class="card">
     <strong>{{ r.step }}</strong> —
-    <span class="{{ 'error' if r.status == 'error' else 'ok' }}">{{ r.status }}</span>
+    <span class="{{ r.status if r.status in ('error', 'skipped') else 'ok' }}">{{ r.status }}</span>
     {% if r.detail %}<div style="font-size:0.85rem; color:#999; margin-top:0.4rem;">{{ r.detail }}</div>{% endif %}
   </div>
   {% endfor %}

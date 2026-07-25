@@ -1,11 +1,11 @@
 # Arr Stack Kit
 
-A self-hosted media automation stack (Sonarr, Radarr, Prowlarr, Transmission, SABnzbd, Overseerr, Homer) plus a small setup/admin panel that wires the pieces together, so you don't have to hand-copy API keys between apps.
+A self-hosted media automation stack (Sonarr, Radarr, Prowlarr, Transmission, SABnzbd, Overseerr, Homer, Recyclarr) plus a small setup/admin panel that wires the pieces together, so you don't have to hand-copy API keys between apps.
 
 ## What's included
 
-- **docker-compose.yml** — brings up the whole stack, plus [gluetun](https://github.com/qdm12/gluetun) to route Transmission's traffic through a Mullvad VPN tunnel.
-- **admin-panel/** — a small password-protected web app (port 5500) where you paste in your *external* credentials (indexer API keys, Usenet provider login, etc.) and it configures everything else automatically via each app's REST API.
+- **docker-compose.yml** — brings up the whole stack, plus [gluetun](https://github.com/qdm12/gluetun) to route Transmission's traffic through a Mullvad VPN tunnel, and [Recyclarr](https://recyclarr.dev/) to keep Sonarr/Radarr's quality profiles in sync with TRaSH Guides on a weekly schedule.
+- **admin-panel/** — a small password-protected web app (port 5500) where you paste in your *external* credentials (indexer API keys, Usenet provider login, etc.) and it configures everything else automatically via each app's REST API — including filling in Recyclarr's Sonarr/Radarr API keys.
 
 ## System requirements
 
@@ -69,7 +69,7 @@ Settings you enter directly in the panel's forms (Usenet provider login, indexer
 ## What the admin panel does NOT do (yet)
 
 - **Overseerr setup** — needs a real Plex account login, so it's a manual one-time step (linked from the panel).
-- **Quality profiles / custom formats** — use [Recyclarr](https://recyclarr.dev/) separately if you want TRaSH Guides-style quality profiles; not wired into this panel yet.
+- **Recyclarr's quality profile / custom format choices** — the panel fills in Sonarr/Radarr's API keys automatically, but which quality profiles and custom formats to sync is a personal choice you make by editing `data/recyclarr/recyclarr.yml` directly (see [Recyclarr's docs](https://recyclarr.dev/wiki/) for examples).
 - **Mullvad WireGuard key generation** — you need to generate and register a WireGuard keypair with your Mullvad account yourself (see comments in `.env.example`); the panel doesn't do this for you since it involves an external account API call best done once by hand.
 
 ## Why gluetun instead of a manual WireGuard config

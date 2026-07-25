@@ -98,6 +98,21 @@ services:
       - "5055:5055"
     restart: unless-stopped
 
+  recyclarr:
+    image: recyclarr/recyclarr
+    container_name: recyclarr
+    user: "${PUID:-1000}:${PGID:-1000}"
+    environment:
+      TZ: ${TZ:-America/New_York}
+      CRON_SCHEDULE: ${RECYCLARR_CRON:-0 3 * * 1}   # weekly, Monday 3am
+      RECYCLARR_CREATE_CONFIG: "true"   # auto-generates a starter /config/recyclarr.yml on first run
+    volumes:
+      - ./data/recyclarr:/config
+    depends_on:
+      - sonarr
+      - radarr
+    restart: unless-stopped
+
   homer:
     image: b4bz/homer
     container_name: homer
@@ -123,6 +138,7 @@ services:
       - ./data/radarr:/mnt/radarr-config:ro
       - ./data/prowlarr:/mnt/prowlarr-config:ro
       - ./data/sabnzbd:/mnt/sabnzbd-config:ro
+      - ./data/recyclarr:/mnt/recyclarr-config
       - ./data/admin-panel:/data
     ports:
       - "5500:5500"

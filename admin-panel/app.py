@@ -10,6 +10,7 @@ from arr_clients import (
     configure_sabnzbd_server,
     ensure_prowlarr_application,
     ensure_prowlarr_indexer,
+    patch_recyclarr_config,
     read_sabnzbd_api_key,
     read_xml_api_key,
 )
@@ -212,6 +213,11 @@ def sync():
             "status": "error",
             "detail": "SABnzbd hasn't been opened once yet (no API key found). Open its web UI once, then retry.",
         })
+
+    results.append({
+        "step": "Recyclarr config",
+        **patch_recyclarr_config("/mnt/recyclarr-config/recyclarr.yml", keys["sonarr"], keys["radarr"]),
+    })
 
     return render_template("sync_result.html", results=results)
 
