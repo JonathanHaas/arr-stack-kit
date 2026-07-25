@@ -1,0 +1,134 @@
+version: "3.8"
+
+x-common-env: &common-env
+  PUID: ${PUID:-1000}
+  PGID: ${PGID:-1000}
+  TZ: ${TZ:-America/New_York}
+
+services:
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: mullvad
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY: ${MULLVAD_PRIVATE_KEY}
+      WIREGUARD_ADDRESSES: ${MULLVAD_ADDRESSES}
+      SERVER_CITIES: ${MULLVAD_CITY:-New York}
+    ports:
+      - "9091:9091"   # Transmission web UI, reached through the VPN container
+    volumes:
+      - ./data/gluetun:/gluetun
+    restart: unless-stopped
+
+  transmission:
+    image: linuxserver/transmission
+    container_name: transmission
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
+    environment:
+      <<: *common-env
+    volumes:
+      - ./data/transmission:/config
+      - ${DOWNLOADS_PATH:-./downloads}:/downloads
+    restart: unless-stopped
+
+  sabnzbd:
+    image: linuxserver/sabnzbd
+    container_name: sabnzbd
+    environment:
+      <<: *common-env
+    volumes:
+      - ./data/sabnzbd:/config
+      - ${DOWNLOADS_PATH:-./downloads}:/downloads
+    ports:
+      - "8090:8080"
+    restart: unless-stopped
+
+  prowlarr:
+    image: linuxserver/prowlarr
+    container_name: prowlarr
+    environment:
+      <<: *common-env
+    volumes:
+      - ./data/prowlarr:/config
+    ports:
+      - "9696:9696"
+    restart: unless-stopped
+
+  sonarr:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    environment:
+      <<: *common-env
+    volumes:
+      - ./data/sonarr:/config
+      - ${TV_PATH:-./media/tv}:/tv
+      - ${DOWNLOADS_PATH:-./downloads}:/downloads
+    ports:
+      - "8989:8989"
+    restart: unless-stopped
+
+  radarr:
+    image: linuxserver/radarr
+    container_name: radarr
+    environment:
+      <<: *common-env
+    volumes:
+      - ./data/radarr:/config
+      - ${MOVIES_PATH:-./media/movies}:/movies
+      - ${DOWNLOADS_PATH:-./downloads}:/downloads
+    ports:
+      - "7878:7878"
+    restart: unless-stopped
+
+  overseerr:
+    image: linuxserver/overseerr
+    container_name: overseerr
+    environment:
+      <<: *common-env
+    volumes:
+      - ./data/overseerr:/config
+    ports:
+      - "5055:5055"
+    restart: unless-stopped
+
+  homer:
+    image: b4bz/homer
+    container_name: homer
+    volumes:
+      - ./data/homer:/www/assets
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  admin-panel:
+    build: ./admin-panel
+    container_name: admin-panel
+    environment:
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+      SONARR_URL: http://sonarr:8989
+      RADARR_URL: http://radarr:7878
+      PROWLARR_URL: http://prowlarr:9696
+      OVERSEERR_URL: http://overseerr:5055
+      SABNZBD_URL: http://sabnzbd:8080
+    volumes:
+      - ./data/sonarr:/mnt/sonarr-config:ro
+      - ./data/radarr:/mnt/radarr-config:ro
+      - ./data/prowlarr:/mnt/prowlarr-config:ro
+      - ./data/sabnzbd:/mnt/sabnzbd-config:ro
+      - ./data/admin-panel:/data
+    ports:
+      - "5500:5500"
+    depends_on:
+      - sonarr
+      - radarr
+      - prowlarr
+      - overseerr
+      - sabnzbd
+    restart: unless-stopped

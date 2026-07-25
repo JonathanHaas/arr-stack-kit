@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <title>Arr Stack Setup</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #14161a; color: #e8e8e8; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    .card { background: #1f2229; padding: 2rem; border-radius: 8px; width: 320px; }
+    input { width: 100%; padding: 0.6rem; margin: 0.5rem 0 1rem; border-radius: 4px; border: 1px solid #333; background: #0f1115; color: #eee; box-sizing: border-box; }
+    button { width: 100%; padding: 0.6rem; background: #4a7dfc; border: none; border-radius: 4px; color: white; font-weight: 600; cursor: pointer; }
+    .error { color: #ff6b6b; margin-bottom: 1rem; }
+    h1 { font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Arr Stack Setup</h1>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <form method="post">
+      <input type="password" name="password" placeholder="Admin password" autofocus>
+      <button type="submit">Log in</button>
+    </form>
+  </div>
+</body>
+</html>
