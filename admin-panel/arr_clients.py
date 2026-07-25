@@ -19,11 +19,18 @@ def read_xml_api_key(config_path):
 def read_sabnzbd_api_key(ini_path):
     if not os.path.exists(ini_path):
         return None
+    # SABnzbd's ini starts with a bare "__version__ = N" line before any
+    # [section] header, which configparser rejects outright — skip past it.
     parser = configparser.ConfigParser(strict=False)
-    parser.read(ini_path)
     try:
+        with open(ini_path) as f:
+            lines = f.readlines()
+        first_section = next((i for i, line in enumerate(lines) if line.strip().startswith("[")), None)
+        if first_section is None:
+            return None
+        parser.read_string("".join(lines[first_section:]))
         return parser.get("misc", "api_key")
-    except (configparser.NoSectionError, configparser.NoOptionError):
+    except (configparser.Error, OSError):
         return None
 
 
