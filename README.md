@@ -7,7 +7,16 @@ A self-hosted media automation stack (Sonarr, Radarr, Prowlarr, Transmission, SA
 - **docker-compose.yml** — brings up the whole stack, plus [gluetun](https://github.com/qdm12/gluetun) to route Transmission's traffic through a Mullvad VPN tunnel.
 - **admin-panel/** — a small password-protected web app (port 5500) where you paste in your *external* credentials (indexer API keys, Usenet provider login, etc.) and it configures everything else automatically via each app's REST API.
 
-## Quick start
+## Quick start (no terminal needed)
+
+For friends who don't use the command line: install [Docker Desktop](https://www.docker.com/products/docker-desktop/), open it once and leave it running, then double-click:
+
+- **Mac**: `start-mac.command`
+- **Windows**: `start-windows.bat`
+
+That's it. It sets everything up and opens the admin panel in your browser automatically, with no separate password required — see [Security notes](#security-notes) for why this is safe as long as you're accessing it either on your own LAN, or through a Cloudflare Tunnel + Access policy rather than exposed raw to the internet.
+
+## Quick start (terminal)
 
 1. Copy `.env.example` to `.env` and fill in values (admin password, Mullvad credentials, media paths).
 2. `docker compose up -d`
@@ -72,5 +81,11 @@ Media files themselves never touch Cloudflare — the tunnel only proxies the ad
 
 ## Security notes
 
-- The admin panel is guarded by a single shared password (`ADMIN_PASSWORD`) — fine for a home network, but don't expose port 5500 directly to the internet. Put it behind a VPN or a reverse-proxy with proper auth (e.g. Cloudflare Zero Trust) if you need remote access.
-- API keys read from each app's config are only ever read (mounted `:ro`), never written by the panel.
+Two supported ways to gate access to the admin panel — pick one, don't mix them:
+
+- **App-level password** (`ADMIN_PASSWORD` + `DISABLE_AUTH=false`, the default in `.env.example`): the panel's own login screen is the only thing standing between anyone and your config. Fine on a trusted home LAN with no remote exposure.
+- **Cloudflare Zero Trust in front, `DISABLE_AUTH=true`**: if you're publishing the admin panel through a Cloudflare Tunnel with an Access policy (gating by email/login before Cloudflare's edge ever reaches your network), a second password on top is redundant — Cloudflare is already the real authentication layer. This is the intended setup for the double-click launcher scripts, and matches how the rest of this stack (Sonarr, Radarr, Transmission, etc.) already assumes Cloudflare Zero Trust handles auth rather than each app's own login.
+
+**The one combination to avoid**: `DISABLE_AUTH=true` with the admin panel's port reachable directly from the internet with no Access policy in front of it. That leaves it completely open to anyone who finds the port.
+
+API keys read from each app's config are only ever read (mounted `:ro`), never written by the panel.
