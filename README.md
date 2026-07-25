@@ -22,6 +22,29 @@ A self-hosted media automation stack (Sonarr, Radarr, Prowlarr, Transmission, SA
    - This adds Sonarr/Radarr as synced applications inside Prowlarr, adds your indexers, and configures SABnzbd's server — all using each app's auto-generated API key, which the panel reads directly off disk.
 6. Point Homer's dashboard config (`data/homer/config.yml`) at whichever services you want cards for. See `homer-config-example.yml` for a starting point matching this stack.
 
+## Admin panel configuration reference
+
+All of these are read from `.env` (see `.env.example` for the full annotated list).
+
+| Variable | Required | Default | Purpose |
+|---|---|---|---|
+| `ADMIN_PASSWORD` | Yes, unless `DISABLE_AUTH=true` | *(none)* | Password to log into the admin panel at `:5500`. |
+| `DISABLE_AUTH` | No | `false` | Skips the login page entirely. **Local testing only** — never set `true` on anything reachable outside your own machine. |
+| `CLOUDFLARE_TUNNEL_TOKEN` | Only if using the `cloudflare` profile | *(none)* | Token from Cloudflare Zero Trust; see [Remote access](#remote-access-via-cloudflare-tunnel-optional) below. |
+
+The panel also auto-detects these — you don't set them, it reads them off each app's own config file the first time that app has been opened once in a browser:
+
+| App | Where the key comes from |
+|---|---|
+| Sonarr | `data/sonarr/config.xml` |
+| Radarr | `data/radarr/config.xml` |
+| Prowlarr | `data/prowlarr/config.xml` |
+| SABnzbd | `data/sabnzbd/sabnzbd.ini` |
+
+If the panel's key-detection table shows "missing" for any of these, open that app's web UI once (first load generates its config), then refresh the panel.
+
+Settings you enter directly in the panel's forms (Usenet provider login, indexer list) are stored in `data/admin-panel/settings.json` — not in `.env` — so they persist across container restarts/rebuilds without needing to re-enter them.
+
 ## What the admin panel does NOT do (yet)
 
 - **Overseerr setup** — needs a real Plex account login, so it's a manual one-time step (linked from the panel).
